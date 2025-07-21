@@ -15,9 +15,7 @@ from tqdm import tqdm
 from f5_tts.model.modules import MelSpec
 from f5_tts.model.utils import default
 
-from audiomentations import *
-import warnings
-warnings.filterwarnings("ignore", category=UserWarning, module="audiomentations")
+
 
 
 def get_speaker_id(path):
