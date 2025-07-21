@@ -39,6 +39,15 @@ Alternatively, you can also create a [F5-TTS enviornment](https://github.com/SWi
   - [model_1500.pt](https://huggingface.co/yl4579/DMOSpeech2/blob/main/model_1500.pt) is the GRPO-finetuned duration predictor checkpoint.
   - [model_85000.pt](https://huggingface.co/yl4579/DMOSpeech2/blob/main/model_85000.pt) is the DMOSpeech checkpoint (including teacher for teacher-guided sampling).
 
+You can run the following command lines:
+
+```bash
+mkdir ckpts
+cd ckpts
+wget https://huggingface.co/yl4579/DMOSpeech2/resolve/main/model_85000.pt
+wget https://huggingface.co/yl4579/DMOSpeech2/resolve/main/model_1500.pt
+```bash
+
 2. Run [demo.ipynb](https://github.com/yl4579/DMOSpeech2/blob/main/src/demo.ipynb) to see various inference schemes.
 
 TODO: 
