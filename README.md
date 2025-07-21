@@ -46,7 +46,7 @@ mkdir ckpts
 cd ckpts
 wget https://huggingface.co/yl4579/DMOSpeech2/resolve/main/model_85000.pt
 wget https://huggingface.co/yl4579/DMOSpeech2/resolve/main/model_1500.pt
-```bash
+```
 
 2. Run [demo.ipynb](https://github.com/yl4579/DMOSpeech2/blob/main/src/demo.ipynb) to see various inference schemes.
 
