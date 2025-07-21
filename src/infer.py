@@ -151,7 +151,7 @@ class DMOInference:
         ).to(self.device)
         
         self.SLP.eval()
-        self.SLP.load_state_dict(torch.load(checkpoint_path)['model_state_dict'])
+        self.SLP.load_state_dict(torch.load(checkpoint_path, map_location='cpu')['model_state_dict'])
         
     def predict_duration(self, pmt_wav_path, tar_text, pmt_text, dp_softmax_range=0.7, temperature=0):
         """
