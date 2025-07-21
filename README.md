@@ -35,14 +35,30 @@ Alternatively, you can also create a [F5-TTS enviornment](https://github.com/SWi
 
 ## Inference
 
-Under construction
+1. Download checkpoints from [Huggingface](https://huggingface.co/yl4579/DMOSpeech2) to `ckpts` folder.
+  - [model_1500.pt](https://huggingface.co/yl4579/DMOSpeech2/blob/main/model_1500.pt) is the GRPO-finetuned duration predictor checkpoint.
+  - [model_85000.pt](https://huggingface.co/yl4579/DMOSpeech2/blob/main/model_85000.pt) is the DMOSpeech checkpoint (including teacher for teacher-guided sampling).
+
+2. Run [demo.ipynb](https://github.com/yl4579/DMOSpeech2/blob/main/src/demo.ipynb) to see various inference schemes.
+
+TODO: 
+
+- [ ] Streaming/Concatenating inference (like F5-TTS)
 
 ## Training
 
-Under construction
+### Under construction
+
+TODO: 
+
+- [ ] Clean and test DMOSpeech training code
+- [ ] Clean and test the duration predictor pre-training
+- [ ] Clean and test speaker verification and CTC model training
+- [ ] Clean and test GRPO fine-tuning
 
 ## References
 
 - [F5-TTS](https://github.com/SWivid/F5-TTS): Main codebase modified from F5-TTS repo, which also serves as the teacher
 - [DMD2](https://github.com/tianweiy/DMD2): Training recipe
 - [simple_GRPO](https://github.com/lsdefine/simple_GRPO): GRPO training recipe
+
