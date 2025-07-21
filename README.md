@@ -2,7 +2,7 @@
 
 [![python](https://img.shields.io/badge/Python-3.10-brightgreen)](https://github.com/yl4579/DMOSpeech2)
 [![arXiv](https://img.shields.io/badge/arXiv-2410.06885-b31b1b.svg?logo=arXiv)](https://arxiv.org/)
-[![demo](https://img.shields.io/badge/GitHub-Demo%20page-orange.svg)](https://https://dmospeech2.github.io/)
+[![demo](https://img.shields.io/badge/GitHub-Demo%20page-orange.svg)](https://dmospeech2.github.io/)
 
 ### Yinghao Aaron Li*, Xilin Jiang*, Fei Tao, Cheng Niu, Kaifeng Xu, Juntong Song, Nima Mesgarani
 
@@ -32,8 +32,6 @@ pip install -r requirements.txt
 ```
 
 Alternatively, you can also create a [F5-TTS enviornment](https://github.com/SWivid/F5-TTS) and directy run the inference with it. 
-
-
 
 ## Inference
 
