@@ -36,7 +36,6 @@ class DMOInference:
         model_type="F5TTS_Base",  # "F5TTS_Base" or "E2TTS_Base"
         tokenizer="pinyin",
         dataset_name="Emilia_ZH_EN",
-        cuda_device_id="5"
     ):
         """
         Initialize F5-TTS inference model.
@@ -50,9 +49,6 @@ class DMOInference:
             dataset_name: Dataset name for tokenizer
             cuda_device_id: CUDA device ID to use
         """
-        # Set CUDA device
-        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-        os.environ["CUDA_VISIBLE_DEVICES"] = cuda_device_id
         
         self.device = device
         self.model_type = model_type
