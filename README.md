@@ -1,7 +1,7 @@
 # DMOSpeech 2: Reinforcement Learning for Duration Prediction in Metric-Optimized Speech Synthesis
 
 [![python](https://img.shields.io/badge/Python-3.10-brightgreen)](https://github.com/yl4579/DMOSpeech2)
-[![arXiv](https://img.shields.io/badge/arXiv-2410.06885-b31b1b.svg?logo=arXiv)](https://arxiv.org/)
+[![arXiv](https://img.shields.io/badge/arXiv-2410.06885-b31b1b.svg?logo=arXiv)](https://arxiv.org/abs/2507.14988)
 [![demo](https://img.shields.io/badge/GitHub-Demo%20page-orange.svg)](https://dmospeech2.github.io/)
 
 ### Yinghao Aaron Li*, Xilin Jiang*, Fei Tao**, Cheng Niu, Kaifeng Xu, Juntong Song, Nima Mesgarani
