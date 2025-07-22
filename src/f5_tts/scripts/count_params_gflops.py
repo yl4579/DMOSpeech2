@@ -1,14 +1,12 @@
 import os
 import sys
 
-
 sys.path.append(os.getcwd())
 
 import thop
 import torch
 
 from f5_tts.model import CFM, DiT
-
 
 """ ~155M """
 # transformer =     UNetT(dim = 768, depth = 20, heads = 12, ff_mult = 4)

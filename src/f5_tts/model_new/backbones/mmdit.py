@@ -13,15 +13,10 @@ import torch
 from torch import nn
 from x_transformers.x_transformers import RotaryEmbedding
 
-from f5_tts.model_new.modules import (
-    AdaLayerNorm_Final,
-    ConvPositionEmbedding,
-    MMDiTBlock,
-    TimestepEmbedding,
-    get_pos_embed_indices,
-    precompute_freqs_cis,
-)
-
+from f5_tts.model_new.modules import (AdaLayerNorm_Final,
+                                      ConvPositionEmbedding, MMDiTBlock,
+                                      TimestepEmbedding, get_pos_embed_indices,
+                                      precompute_freqs_cis)
 
 # text embedding
 

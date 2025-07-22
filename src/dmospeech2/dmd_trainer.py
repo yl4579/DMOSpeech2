@@ -1,28 +1,26 @@
 from __future__ import annotations
 
-import os
 import gc
-from tqdm import tqdm
-import wandb
+import math
+import os
 
 import torch
 import torch.nn as nn
-from torch.optim import AdamW
-from torch.utils.data import DataLoader, Dataset, SequentialSampler
-from torch.optim.lr_scheduler import LinearLR, SequentialLR
-
+import wandb
 from accelerate import Accelerator
 from accelerate.utils import DistributedDataParallelKwargs
+from torch.optim import AdamW
+from torch.optim.lr_scheduler import LinearLR, SequentialLR
+from torch.utils.data import DataLoader, Dataset, SequentialSampler
+from tqdm import tqdm
+from dmospeech2.unimodel import UniModel
 
-from unimodel import UniModel
 from f5_tts.model import CFM
-from f5_tts.model.utils import exists, default
 from f5_tts.model.dataset import DynamicBatchSampler, collate_fn
-
+from f5_tts.model.utils import default, exists
 
 # trainer
 
-import math
 
 class RunningStats:
     def __init__(self):
@@ -49,7 +47,6 @@ class RunningStats:
         return math.sqrt(self.variance)
 
 
-
 class Trainer:
     def __init__(
         self,
@@ -74,7 +71,7 @@ class Trainer:
         accelerate_kwargs: dict = dict(),
         bnb_optimizer: bool = False,
         scale: float = 1.0,
-        
+
         # training parameters for DMDSpeech
         num_student_step: int = 1,
         gen_update_ratio: int = 5,
@@ -142,25 +139,25 @@ class Trainer:
         self.noise_scheduler = noise_scheduler
 
         self.duration_predictor = duration_predictor
-        
+
         self.log_step = log_step
 
-        self.gen_update_ratio = gen_update_ratio # number of generator updates per guidance (fake score function and discriminator) update
-        self.lambda_discriminator_loss = lambda_discriminator_loss # weight for discriminator loss (L_adv)
-        self.lambda_generator_loss = lambda_generator_loss # weight for generator loss (L_adv)
-        self.lambda_ctc_loss = lambda_ctc_loss # weight for ctc loss
-        self.lambda_sim_loss = lambda_sim_loss # weight for similarity loss
-        
+        self.gen_update_ratio = gen_update_ratio  # number of generator updates per guidance (fake score function and discriminator) update
+        self.lambda_discriminator_loss = lambda_discriminator_loss  # weight for discriminator loss (L_adv)
+        self.lambda_generator_loss = lambda_generator_loss  # weight for generator loss (L_adv)
+        self.lambda_ctc_loss = lambda_ctc_loss  # weight for ctc loss
+        self.lambda_sim_loss = lambda_sim_loss  # weight for similarity loss
+
         # create distillation schedule for student model
         self.student_steps = (
-                torch.linspace(0.0, 1.0, num_student_step + 1)[:-1])
-        
-        self.GAN = model.guidance_model.gen_cls_loss # whether to use GAN training
-        self.num_GAN = num_GAN # number of steps before adversarial training
-        self.num_D = num_D # number of steps to train the discriminator before adversarial training 
-        self.num_ctc = num_ctc # number of steps before CTC training
-        self.num_sim = num_sim # number of steps before similarity training
-        self.num_simu = num_simu # number of steps before using simulated data
+            torch.linspace(0.0, 1.0, num_student_step + 1)[:-1])
+
+        self.GAN = model.guidance_model.gen_cls_loss  # whether to use GAN training
+        self.num_GAN = num_GAN  # number of steps before adversarial training
+        self.num_D = num_D  # number of steps to train the discriminator before adversarial training
+        self.num_ctc = num_ctc  # number of steps before CTC training
+        self.num_sim = num_sim  # number of steps before similarity training
+        self.num_simu = num_simu  # number of steps before using simulated data
 
         # Assuming `self.model.fake_unet.parameters()` and `self.model.guidance_model.parameters()` are accessible
         if bnb_optimizer:
@@ -176,7 +173,6 @@ class Trainer:
         self.generator_norm = RunningStats()
         self.guidance_norm = RunningStats()
 
-    
     @property
     def is_main(self):
         return self.accelerator.is_main_process
@@ -232,7 +228,6 @@ class Trainer:
         del checkpoint
         gc.collect()
         return step
-    
 
     def train(self, train_dataset: Dataset, num_workers=64, resumable_with_seed: int = None, vocoder: nn.Module = None):
         if exists(resumable_with_seed):
@@ -274,12 +269,12 @@ class Trainer:
         warmup_steps = (
             self.num_warmup_updates * self.accelerator.num_processes
         )
-        
+
         # consider a fixed warmup steps while using accelerate multi-gpu ddp
         # otherwise by default with split_batches=False, warmup steps change with num_processes
         total_steps = len(train_dataloader) * self.epochs / self.grad_accumulation_steps
         decay_steps = total_steps - warmup_steps
-        
+
         warmup_scheduler_generator = LinearLR(self.optimizer_generator, start_factor=1e-8, end_factor=1.0, total_iters=warmup_steps // (self.gen_update_ratio * self.grad_accumulation_steps))
         decay_scheduler_generator = LinearLR(self.optimizer_generator, start_factor=1.0, end_factor=1e-8, total_iters=decay_steps // (self.gen_update_ratio * self.grad_accumulation_steps))
         self.scheduler_generator = SequentialLR(self.optimizer_generator, schedulers=[warmup_scheduler_generator, decay_scheduler_generator], milestones=[warmup_steps // (self.gen_update_ratio * self.grad_accumulation_steps)])
@@ -307,7 +302,7 @@ class Trainer:
             if exists(resumable_with_seed) and epoch == skipped_epoch:
                 progress_bar = tqdm(
                     skipped_dataloader,
-                    desc=f"Epoch {epoch+1}/{self.epochs}",
+                    desc=f"Epoch {epoch + 1}/{self.epochs}",
                     unit="step",
                     disable=not self.accelerator.is_local_main_process,
                     initial=skipped_batch,
@@ -316,36 +311,36 @@ class Trainer:
             else:
                 progress_bar = tqdm(
                     train_dataloader,
-                    desc=f"Epoch {epoch+1}/{self.epochs}",
+                    desc=f"Epoch {epoch + 1}/{self.epochs}",
                     unit="step",
                     disable=not self.accelerator.is_local_main_process,
                 )
 
             for batch in progress_bar:
                 update_generator = global_step % self.gen_update_ratio == 0
-                        
+
                 with self.accelerator.accumulate(self.model):
                     metrics = {}
                     text_inputs = batch["text"]
                     mel_spec = batch["mel"].permute(0, 2, 1)
                     mel_lengths = batch["mel_lengths"]
-                    
+
                     mel_spec = mel_spec / self.scale
-                    
-                    guidance_loss_dict, guidance_log_dict = self.model(inp=mel_spec, 
-                                                                text=text_inputs, 
-                                                                lens=mel_lengths, 
-                                                                student_steps=self.student_steps,
-                                                                update_generator=False,
-                                                                use_simulated=global_step >= self.num_simu,
-                                                                )
+
+                    guidance_loss_dict, guidance_log_dict = self.model(inp=mel_spec,
+                                                                       text=text_inputs,
+                                                                       lens=mel_lengths,
+                                                                       student_steps=self.student_steps,
+                                                                       update_generator=False,
+                                                                       use_simulated=global_step >= self.num_simu,
+                                                                       )
 
                     # if self.GAN and update_generator:
                     #     # only add discriminator loss if GAN is enabled and generator is being updated
                     #     guidance_cls_loss = guidance_loss_dict["guidance_cls_loss"] * (self.lambda_discriminator_loss if global_step >= self.num_GAN and update_generator else 0)
                     #     metrics['loss/discriminator_loss'] = guidance_loss_dict["guidance_cls_loss"]
                     #     self.accelerator.backward(guidance_cls_loss, retain_graph=True)
-                        
+
                     #     if self.max_grad_norm > 0 and self.accelerator.sync_gradients:
                     #         metrics['grad_norm_guidance'] = self.accelerator.clip_grad_norm_(self.model.parameters(), self.max_grad_norm)
 
@@ -360,7 +355,7 @@ class Trainer:
                         metrics['loss/discriminator_loss'] = guidance_loss_dict["guidance_cls_loss"]
 
                         guidance_loss += guidance_cls_loss
-                    
+
                     self.accelerator.backward(guidance_loss)
 
                     if self.max_grad_norm > 0 and self.accelerator.sync_gradients:
@@ -376,20 +371,19 @@ class Trainer:
                         # elif self.guidance_norm.count >= 100:
                         #     self.guidance_norm.update(metrics['grad_norm_guidance'])
 
-
                     self.optimizer_guidance.step()
                     self.scheduler_guidance.step()
                     self.optimizer_guidance.zero_grad()
                     self.optimizer_generator.zero_grad()  # zero out the generator's gradient as well
-                    
+
                     if update_generator:
-                        generator_loss_dict, generator_log_dict = self.model(inp=mel_spec, 
-                                                                        text=text_inputs, 
-                                                                        lens=mel_lengths, 
-                                                                        student_steps=self.student_steps,
-                                                                        update_generator=True,
-                                                                        use_simulated=global_step >= self.num_ctc,
-                                                                        )
+                        generator_loss_dict, generator_log_dict = self.model(inp=mel_spec,
+                                                                             text=text_inputs,
+                                                                             lens=mel_lengths,
+                                                                             student_steps=self.student_steps,
+                                                                             update_generator=True,
+                                                                             use_simulated=global_step >= self.num_ctc,
+                                                                             )
                         # if self.GAN:
                         #     gen_cls_loss = generator_loss_dict["gen_cls_loss"] * (self.lambda_generator_loss if global_step >= (self.num_GAN + self.num_D) and update_generator else 0)
                         #     metrics["loss/gen_cls_loss"] = generator_loss_dict["gen_cls_loss"]
@@ -402,7 +396,7 @@ class Trainer:
                         generator_loss = 0
                         generator_loss += generator_loss_dict["loss_dm"]
                         if "loss_mse" in generator_loss_dict:
-                            generator_loss += generator_loss_dict["loss_mse"] 
+                            generator_loss += generator_loss_dict["loss_mse"]
                         generator_loss += generator_loss_dict["loss_ctc"] * (self.lambda_ctc_loss if global_step >= self.num_ctc else 0)
                         generator_loss += generator_loss_dict["loss_sim"] * (self.lambda_sim_loss if global_step >= self.num_sim else 0)
                         generator_loss += generator_loss_dict["loss_kl"] * (self.lambda_ctc_loss if global_step >= self.num_ctc else 0)
@@ -416,7 +410,7 @@ class Trainer:
 
                         metrics['loss/similarity_loss'] = generator_loss_dict["loss_sim"]
                         metrics['loss/generator_loss'] = generator_loss
-                        
+
                         if "loss_mse" in generator_loss_dict and generator_loss_dict["loss_mse"] != 0:
                             metrics['loss/mse_loss'] = generator_loss_dict["loss_mse"]
                         if "loss_kl" in generator_loss_dict and generator_loss_dict["loss_kl"] != 0:
@@ -427,7 +421,7 @@ class Trainer:
                         if self.max_grad_norm > 0 and self.accelerator.sync_gradients:
                             metrics['grad_norm_generator'] = self.accelerator.clip_grad_norm_(self.model.parameters(), self.max_grad_norm)
                             # self.generator_norm.update(metrics['grad_norm_generator'])
-                            
+
                             # if metrics['grad_norm_generator'] > self.generator_norm.mean + 15 * self.generator_norm.std:
                             #     self.optimizer_generator.zero_grad()
                             #     self.optimizer_guidance.zero_grad()
@@ -440,16 +434,14 @@ class Trainer:
                             self.optimizer_generator.zero_grad()
                             self.optimizer_guidance.zero_grad()  # zero out the guidance's gradient as well
 
-
                 global_step += 1
 
                 if self.accelerator.is_local_main_process:
                     self.accelerator.log({**metrics,
                                           "lr_generator": self.scheduler_generator.get_last_lr()[0],
                                           "lr_guidance": self.scheduler_guidance.get_last_lr()[0],
-                                          }
-                                         , step=global_step)
-                
+                                          }, step=global_step)
+
                 if global_step % self.log_step == 0 and self.accelerator.is_local_main_process and vocoder is not None:
                     # log the first batch of the epoch
                     with torch.no_grad():
@@ -468,7 +460,7 @@ class Trainer:
                             sample_rate=24000,
                             caption="time: " + str(generator_log_dict['time'][0].float().cpu().numpy())
                         )
-                        
+
                         generator_cond = generator_log_dict['generator_cond'][0].unsqueeze(0).permute(0, 2, 1) * self.scale
                         generator_cond = vocoder.decode(generator_cond.float().cpu())
                         generator_cond = wandb.Audio(
@@ -476,7 +468,7 @@ class Trainer:
                             sample_rate=24000,
                             caption="time: " + str(generator_log_dict['time'][0].float().cpu().numpy())
                         )
-                        
+
                         ground_truth = generator_log_dict['ground_truth'][0].unsqueeze(0).permute(0, 2, 1) * self.scale
                         ground_truth = vocoder.decode(ground_truth.float().cpu())
                         ground_truth = wandb.Audio(
@@ -484,7 +476,7 @@ class Trainer:
                             sample_rate=24000,
                             caption="time: " + str(generator_log_dict['time'][0].float().cpu().numpy())
                         )
-                        
+
                         dmtrain_noisy_inp = generator_log_dict['dmtrain_noisy_inp'][0].unsqueeze(0).permute(0, 2, 1) * self.scale
                         dmtrain_noisy_inp = vocoder.decode(dmtrain_noisy_inp.float().cpu())
                         dmtrain_noisy_inp = wandb.Audio(
@@ -492,7 +484,7 @@ class Trainer:
                             sample_rate=24000,
                             caption="dmtrain_time: " + str(generator_log_dict['dmtrain_time'][0].float().cpu().numpy())
                         )
-                        
+
                         dmtrain_pred_real_image = generator_log_dict['dmtrain_pred_real_image'][0].unsqueeze(0).permute(0, 2, 1) * self.scale
                         dmtrain_pred_real_image = vocoder.decode(dmtrain_pred_real_image.float().cpu())
                         dmtrain_pred_real_image = wandb.Audio(
@@ -500,7 +492,7 @@ class Trainer:
                             sample_rate=24000,
                             caption="dmtrain_time: " + str(generator_log_dict['dmtrain_time'][0].float().cpu().numpy())
                         )
-                        
+
                         dmtrain_pred_fake_image = generator_log_dict['dmtrain_pred_fake_image'][0].unsqueeze(0).permute(0, 2, 1) * self.scale
                         dmtrain_pred_fake_image = vocoder.decode(dmtrain_pred_fake_image.float().cpu())
                         dmtrain_pred_fake_image = wandb.Audio(
@@ -508,17 +500,16 @@ class Trainer:
                             sample_rate=24000,
                             caption="dmtrain_time: " + str(generator_log_dict['dmtrain_time'][0].float().cpu().numpy())
                         )
-                        
-                                                
-                        self.accelerator.log({"noisy_input": generator_input, 
+
+                        self.accelerator.log({"noisy_input": generator_input,
                                               "output": generator_output,
-                                                "cond": generator_cond,
-                                                "ground_truth": ground_truth,
-                                                "dmtrain_noisy_inp": dmtrain_noisy_inp,
-                                                "dmtrain_pred_real_image": dmtrain_pred_real_image,
-                                                "dmtrain_pred_fake_image": dmtrain_pred_fake_image,
-                                                
-                                             }, step=global_step)
+                                              "cond": generator_cond,
+                                              "ground_truth": ground_truth,
+                                              "dmtrain_noisy_inp": dmtrain_noisy_inp,
+                                              "dmtrain_pred_real_image": dmtrain_pred_real_image,
+                                              "dmtrain_pred_fake_image": dmtrain_pred_fake_image,
+
+                                              }, step=global_step)
 
                 progress_bar.set_postfix(step=str(global_step), metrics=metrics)
 
@@ -531,5 +522,3 @@ class Trainer:
         self.save_checkpoint(global_step, last=True)
 
         self.accelerator.end_training()
-        
-        

@@ -12,7 +12,6 @@ from tqdm import tqdm
 
 from f5_tts.model.utils import repetition_found
 
-
 # Define filters for exclusion
 out_en = set()
 en_filters = ["ا", "い", "て"]

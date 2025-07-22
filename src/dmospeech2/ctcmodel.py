@@ -1,27 +1,13 @@
-from torch import nn
-import torch 
 import copy
-
 from pathlib import Path
+
+import torch
+from torch import nn
 from torchaudio.models import Conformer
 
+from f5_tts.model.utils import (default, exists, lens_to_mask, list_str_to_idx,
+                                list_str_to_tensor, mask_from_frac_lengths)
 
-from f5_tts.model.utils import default
-from f5_tts.model.utils import exists
-from f5_tts.model.utils import list_str_to_idx
-from f5_tts.model.utils import list_str_to_tensor
-from f5_tts.model.utils import lens_to_mask
-from f5_tts.model.utils import mask_from_frac_lengths
-
-
-from f5_tts.model.utils import (
-    default,
-    exists,
-    list_str_to_idx,
-    list_str_to_tensor,
-    lens_to_mask,
-    mask_from_frac_lengths,
-)
 
 class ResBlock(nn.Module):
     def __init__(self, hidden_dim, n_conv=3, dropout_p=0.2):
@@ -30,7 +16,6 @@ class ResBlock(nn.Module):
         self.blocks = nn.ModuleList([
             self._get_conv(hidden_dim, dilation=3**i, dropout_p=dropout_p)
             for i in range(n_conv)])
-
 
     def forward(self, x):
         for block in self.blocks:
@@ -55,26 +40,25 @@ class ResBlock(nn.Module):
 class ConformerCTC(nn.Module):
     def __init__(self,
                  vocab_size,
-                 mel_dim=100, 
-                 num_heads=8, 
-                 d_hid=512, 
+                 mel_dim=100,
+                 num_heads=8,
+                 d_hid=512,
                  nlayers=6):
         super().__init__()
-        
+
         self.mel_proj = nn.Conv1d(mel_dim, d_hid, kernel_size=3, padding=1)
-        
+
         self.d_hid = d_hid
-        
+
         self.resblock1 = nn.Sequential(
-                ResBlock(d_hid),
-                nn.GroupNorm(num_groups=1, num_channels=d_hid)
-            )
-        
+            ResBlock(d_hid),
+            nn.GroupNorm(num_groups=1, num_channels=d_hid)
+        )
+
         self.resblock2 = nn.Sequential(
-                ResBlock(d_hid),
-                nn.GroupNorm(num_groups=1, num_channels=d_hid)
-            )
-        
+            ResBlock(d_hid),
+            nn.GroupNorm(num_groups=1, num_channels=d_hid)
+        )
 
         self.conf_pre = torch.nn.ModuleList(
             [Conformer(
@@ -85,9 +69,9 @@ class ConformerCTC(nn.Module):
              depthwise_conv_kernel_size=15,
              use_group_norm=True,)
                 for _ in range(nlayers // 2)
-            ]
+             ]
         )
-        
+
         self.conf_after = torch.nn.ModuleList(
             [Conformer(
              input_dim=d_hid,
@@ -97,14 +81,13 @@ class ConformerCTC(nn.Module):
              depthwise_conv_kernel_size=7,
              use_group_norm=True,)
                 for _ in range(nlayers // 2)
-            ]
+             ]
         )
 
-        self.out = nn.Linear(d_hid, 1 + vocab_size) # 1 for blank
+        self.out = nn.Linear(d_hid, 1 + vocab_size)  # 1 for blank
 
         self.ctc_loss = nn.CTCLoss(blank=vocab_size, zero_infinity=True).cuda()
 
-                
     def forward(self, latent, text=None, text_lens=None):
         layers = []
 
@@ -147,9 +130,8 @@ class ConformerCTC(nn.Module):
 if __name__ == "__main__":
     from f5_tts.model.utils import get_tokenizer
 
-
     bsz = 16
-    
+
     tokenizer = "pinyin"  # 'pinyin', 'char', or 'custom'
     tokenizer_path = None  # if tokenizer = 'custom', define the path to the tokenizer you want to use (should be vocab.txt)
     dataset_name = "Emilia_ZH_EN"
@@ -158,15 +140,15 @@ if __name__ == "__main__":
     else:
         tokenizer_path = dataset_name
     vocab_char_map, vocab_size = get_tokenizer(tokenizer_path, tokenizer)
-    
+
     model = ConformerCTC(vocab_size, mel_dim=80, num_heads=8, d_hid=512, nlayers=6).cuda()
-    
+
     text = ["hello world"] * bsz
     lens = torch.randint(1, 1000, (bsz,)).cuda()
     inp = torch.randn(bsz, lens.max(), 80).cuda()
-    
+
     batch, seq_len, dtype, device = *inp.shape[:2], inp.dtype, inp.device
-    
+
     # handle text as string
     text_lens = torch.tensor([len(t) for t in text], device=device)
     if isinstance(text, list):
@@ -198,7 +180,6 @@ if __name__ == "__main__":
 
     char_vocab_map = list(vocab_char_map.keys())
 
-
     for batch in best_path:
         decoded_sequence = []
         previous_token = None
@@ -216,6 +197,6 @@ if __name__ == "__main__":
     gt_texts = []
     for i in range(text_lens.size(0)):
         gt_texts.append(''.join([char_vocab_map[token] for token in text[i, :text_lens[i]]]))
-    
+
     print(decoded_texts)
     print(gt_texts)

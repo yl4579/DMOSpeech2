@@ -1,7 +1,6 @@
 import os
 import sys
 
-
 sys.path.append(os.getcwd())
 
 import argparse
@@ -15,15 +14,12 @@ from hydra.utils import get_class
 from omegaconf import OmegaConf
 from tqdm import tqdm
 
-from f5_tts.eval.utils_eval import (
-    get_inference_prompt,
-    get_librispeech_test_clean_metainfo,
-    get_seedtts_testset_metainfo,
-)
+from f5_tts.eval.utils_eval import (get_inference_prompt,
+                                    get_librispeech_test_clean_metainfo,
+                                    get_seedtts_testset_metainfo)
 from f5_tts.infer.utils_infer import load_checkpoint, load_vocoder
 from f5_tts.model import CFM
 from f5_tts.model.utils import get_tokenizer
-
 
 accelerator = Accelerator()
 device = f"cuda:{accelerator.process_index}"

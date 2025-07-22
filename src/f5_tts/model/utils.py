@@ -5,12 +5,10 @@ import random
 from collections import defaultdict
 from importlib.resources import files
 
-import torch
-from torch.nn.utils.rnn import pad_sequence
-
 import jieba
-from pypinyin import lazy_pinyin, Style
-
+import torch
+from pypinyin import Style, lazy_pinyin
+from torch.nn.utils.rnn import pad_sequence
 
 # seed everything
 
@@ -109,7 +107,7 @@ def get_tokenizer(dataset_name, tokenizer: str = "pinyin"):
                 - if use "byte", set to 256 (unicode byte range)
     """
     if tokenizer in ["pinyin", "char"]:
-        tokenizer_path = os.path.join(files("f5_tts").joinpath("../../data"), f"{dataset_name}_{tokenizer}/vocab.txt")
+        tokenizer_path = os.path.join(files("f5_tts").joinpath("data"), f"{dataset_name}_{tokenizer}/vocab.txt")
         with open(tokenizer_path, "r", encoding="utf-8") as f:
             vocab_char_map = {}
             for i, char in enumerate(f):
@@ -131,9 +129,7 @@ def get_tokenizer(dataset_name, tokenizer: str = "pinyin"):
     return vocab_char_map, vocab_size
 
 
-
 # convert char to pinyin
-
 jieba.initialize()
 print("Word segmentation module jieba initialized.\n")
 
@@ -184,7 +180,7 @@ def convert_char_to_pinyin(text_list, polyphone=True):
 def repetition_found(text, length=2, tolerance=10):
     pattern_count = defaultdict(int)
     for i in range(len(text) - length + 1):
-        pattern = text[i : i + length]
+        pattern = text[i: i + length]
         pattern_count[pattern] += 1
     for pattern, count in pattern_count.items():
         if count > tolerance:
@@ -224,7 +220,7 @@ def load_checkpoint(model, ckpt_path, device, use_ema=True):
 def sample_consecutive_steps(float_list):
     idx = torch.randint(0, len(float_list), size=(1,))
     next_idx = idx - 1
-    
+
     if next_idx < 0:
         next_idx = 0
     else:
@@ -247,4 +243,3 @@ def sample_from_list(float_list, N):
         random_samples = float_tensor[random_indices]
 
     return random_samples
-

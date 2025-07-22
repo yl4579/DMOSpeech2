@@ -13,8 +13,8 @@ from ...layers import Linear
 from ...module import Module, ModuleList
 from ...plugin import current_all_reduce_helper
 from ..modeling_utils import PretrainedConfig, PretrainedModel
-from .modules import AdaLayerNormZero_Final, ConvPositionEmbedding, DiTBlock, TimestepEmbedding
-
+from .modules import (AdaLayerNormZero_Final, ConvPositionEmbedding, DiTBlock,
+                      TimestepEmbedding)
 
 current_file_path = os.path.abspath(__file__)
 parent_dir = os.path.dirname(current_file_path)

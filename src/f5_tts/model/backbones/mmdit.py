@@ -10,29 +10,17 @@ d - dimension
 from __future__ import annotations
 
 import torch
-from torch import nn
 import torch.nn.functional as F
-
+from torch import nn
 from x_transformers.x_transformers import RotaryEmbedding
 
-from f5_tts.model.modules import (
-    TimestepEmbedding,
-    ConvPositionEmbedding,
-    MMDiTBlock,
-    DiTBlock,
-    AdaLayerNormZero_Final,
-    precompute_freqs_cis,
-    get_pos_embed_indices,
-)
+from f5_tts.model.modules import (AdaLayerNormZero_Final,
+                                  ConvPositionEmbedding, DiTBlock, MMDiTBlock,
+                                  TimestepEmbedding, get_pos_embed_indices,
+                                  precompute_freqs_cis)
+from f5_tts.model.utils import (default, exists, lens_to_mask, list_str_to_idx,
+                                list_str_to_tensor, mask_from_frac_lengths)
 
-from f5_tts.model.utils import (
-    default,
-    exists,
-    lens_to_mask,
-    list_str_to_idx,
-    list_str_to_tensor,
-    mask_from_frac_lengths,
-)
 # text embedding
 
 

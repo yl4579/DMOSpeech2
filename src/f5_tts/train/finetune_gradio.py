@@ -32,7 +32,6 @@ from f5_tts.api import F5TTS
 from f5_tts.infer.utils_infer import transcribe
 from f5_tts.model.utils import convert_char_to_pinyin
 
-
 training_process = None
 system = platform.system()
 python_executable = sys.executable or "python"

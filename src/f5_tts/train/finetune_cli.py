@@ -9,7 +9,6 @@ from f5_tts.model import CFM, DiT, Trainer, UNetT
 from f5_tts.model.dataset import load_dataset
 from f5_tts.model.utils import get_tokenizer
 
-
 # -------------------------- Dataset Settings --------------------------- #
 target_sample_rate = 24000
 n_mel_channels = 100

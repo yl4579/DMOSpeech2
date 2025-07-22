@@ -20,7 +20,6 @@ from conv_stft import STFT
 from huggingface_hub import hf_hub_download
 from vocos import Vocos
 
-
 opset_version = 17
 
 

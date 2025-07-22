@@ -13,14 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from .baichuan.model import BaichuanForCausalLM
-from .bert.model import (
-    BertForQuestionAnswering,
-    BertForSequenceClassification,
-    BertModel,
-    RobertaForQuestionAnswering,
-    RobertaForSequenceClassification,
-    RobertaModel,
-)
+from .bert.model import (BertForQuestionAnswering,
+                         BertForSequenceClassification, BertModel,
+                         RobertaForQuestionAnswering,
+                         RobertaForSequenceClassification, RobertaModel)
 from .bloom.model import BloomForCausalLM, BloomModel
 from .chatglm.config import ChatGLMConfig
 from .chatglm.model import ChatGLMForCausalLM, ChatGLMModel
@@ -51,16 +47,16 @@ from .mamba.model import MambaForCausalLM
 from .medusa.config import MedusaConfig
 from .medusa.model import MedusaForCausalLm
 from .mllama.model import MLLaMAModel
-from .modeling_utils import PretrainedConfig, PretrainedModel, SpeculativeDecodingMode
+from .modeling_utils import (PretrainedConfig, PretrainedModel,
+                             SpeculativeDecodingMode)
 from .mpt.model import MPTForCausalLM, MPTModel
 from .nemotron_nas.model import DeciLMForCausalLM
 from .opt.model import OPTForCausalLM, OPTModel
-from .phi.model import PhiForCausalLM, PhiModel
 from .phi3.model import Phi3ForCausalLM, Phi3Model
+from .phi.model import PhiForCausalLM, PhiModel
 from .qwen.model import QWenForCausalLM
 from .recurrentgemma.model import RecurrentGemmaForCausalLM
 from .redrafter.model import ReDrafterForCausalLM
-
 
 __all__ = [
     "BertModel",
