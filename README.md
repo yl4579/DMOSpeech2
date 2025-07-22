@@ -14,6 +14,10 @@
 
 **: Project leader
 
+TODO: 
+
+- [ ] Fine-tune vocoder or train HiFTNet for higher acoustic quality
+
 ## Pre-requisites
 
 ### Create a separate environment if needed
