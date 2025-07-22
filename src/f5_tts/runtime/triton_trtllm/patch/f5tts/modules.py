@@ -9,28 +9,10 @@ import torch.nn.functional as F
 from tensorrt_llm._common import default_net
 
 from ..._utils import str_dtype_to_trt, trt_dtype_to_np
-from ...functional import (
-    Tensor,
-    bert_attention,
-    cast,
-    chunk,
-    concat,
-    constant,
-    expand,
-    expand_dims,
-    expand_dims_like,
-    expand_mask,
-    gelu,
-    matmul,
-    permute,
-    shape,
-    silu,
-    slice,
-    softmax,
-    squeeze,
-    unsqueeze,
-    view,
-)
+from ...functional import (Tensor, bert_attention, cast, chunk, concat,
+                           constant, expand, expand_dims, expand_dims_like,
+                           expand_mask, gelu, matmul, permute, shape, silu,
+                           slice, softmax, squeeze, unsqueeze, view)
 from ...layers import ColumnLinear, Conv1d, LayerNorm, Linear, Mish, RowLinear
 from ...module import Module
 

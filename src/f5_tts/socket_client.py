@@ -6,7 +6,6 @@ import time
 import numpy as np
 import pyaudio
 
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 

@@ -19,7 +19,6 @@ import torchaudio
 from cached_path import cached_path
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-
 try:
     import spaces
 
@@ -35,17 +34,11 @@ def gpu_decorator(func):
         return func
 
 
-from f5_tts.infer.utils_infer import (
-    infer_process,
-    load_model,
-    load_vocoder,
-    preprocess_ref_audio_text,
-    remove_silence_for_generated_wav,
-    save_spectrogram,
-    tempfile_kwargs,
-)
+from f5_tts.infer.utils_infer import (infer_process, load_model, load_vocoder,
+                                      preprocess_ref_audio_text,
+                                      remove_silence_for_generated_wav,
+                                      save_spectrogram, tempfile_kwargs)
 from f5_tts.model import DiT, UNetT
-
 
 DEFAULT_TTS_MODEL = "F5-TTS_v1"
 tts_model_choice = DEFAULT_TTS_MODEL

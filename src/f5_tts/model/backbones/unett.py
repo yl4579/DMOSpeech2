@@ -8,26 +8,19 @@ d - dimension
 """
 
 from __future__ import annotations
+
 from typing import Literal
 
 import torch
-from torch import nn
 import torch.nn.functional as F
-
+from torch import nn
 from x_transformers import RMSNorm
 from x_transformers.x_transformers import RotaryEmbedding
 
-from f5_tts.model.modules import (
-    TimestepEmbedding,
-    ConvNeXtV2Block,
-    ConvPositionEmbedding,
-    Attention,
-    AttnProcessor,
-    FeedForward,
-    precompute_freqs_cis,
-    get_pos_embed_indices,
-)
-
+from f5_tts.model.modules import (Attention, AttnProcessor, ConvNeXtV2Block,
+                                  ConvPositionEmbedding, FeedForward,
+                                  TimestepEmbedding, get_pos_embed_indices,
+                                  precompute_freqs_cis)
 
 # Text embedding
 

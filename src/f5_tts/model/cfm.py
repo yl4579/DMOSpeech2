@@ -19,14 +19,8 @@ from torch.nn.utils.rnn import pad_sequence
 from torchdiffeq import odeint
 
 from f5_tts.model.modules import MelSpec
-from f5_tts.model.utils import (
-    default,
-    exists,
-    lens_to_mask,
-    list_str_to_idx,
-    list_str_to_tensor,
-    mask_from_frac_lengths,
-)
+from f5_tts.model.utils import (default, exists, lens_to_mask, list_str_to_idx,
+                                list_str_to_tensor, mask_from_frac_lengths)
 
 
 class CFM(nn.Module):

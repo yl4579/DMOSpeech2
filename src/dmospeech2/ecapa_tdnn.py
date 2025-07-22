@@ -1,12 +1,13 @@
 # part of the code is borrowed from https://github.com/lawlict/ECAPA-TDNN
 
+# from ctcmodel_nopool import ConformerCTC as ConformerCTCNoPool
+from pathlib import Path
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchaudio.transforms as trans
-from ctcmodel import ConformerCTC
-# from ctcmodel_nopool import ConformerCTC as ConformerCTCNoPool
-from pathlib import Path
+from dmospeech2.ctcmodel import ConformerCTC
 
 ''' Res2Conv1d + BatchNorm1d + ReLU
 '''
@@ -87,6 +88,7 @@ class SE_Connect(nn.Module):
 ''' SE-Res2Block of the ECAPA-TDNN architecture.
 '''
 
+
 class SE_Res2Block(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride, padding, dilation, scale, se_bottleneck_dim):
         super().__init__()
@@ -118,6 +120,7 @@ class SE_Res2Block(nn.Module):
 
 ''' Attentive weighted mean and standard deviation pooling.
 '''
+
 
 class AttentiveStatsPool(nn.Module):
     def __init__(self, in_dim, attention_channels=128, global_context_att=False):
@@ -151,13 +154,13 @@ class AttentiveStatsPool(nn.Module):
 
 
 class ECAPA_TDNN(nn.Module):
-    def __init__(self, channels=512, emb_dim=512, 
-        global_context_att=False, use_fp16=True,
-        ctc_cls=ConformerCTC,
-        ctc_path='/data4/F5TTS/ckpts/F5TTS_norm_ASR_vocos_pinyin_Emilia_ZH_EN/model_last.pt',
-        ctc_args={'vocab_size': 2545, 'mel_dim': 100, 'num_heads': 8, 'd_hid': 512, 'nlayers': 6},
-        ctc_no_grad=False
-    ):
+    def __init__(self, channels=512, emb_dim=512,
+                 global_context_att=False, use_fp16=True,
+                 ctc_cls=ConformerCTC,
+                 ctc_path='/data4/F5TTS/ckpts/F5TTS_norm_ASR_vocos_pinyin_Emilia_ZH_EN/model_last.pt',
+                 ctc_args={'vocab_size': 2545, 'mel_dim': 100, 'num_heads': 8, 'd_hid': 512, 'nlayers': 6},
+                 ctc_no_grad=False
+                 ):
         super().__init__()
         if ctc_path != None:
             ctc_path = Path(ctc_path)
@@ -170,7 +173,7 @@ class ECAPA_TDNN(nn.Module):
 
         self.ctc_model = model
         self.ctc_model.out.requires_grad_(False)
-    
+
         if ctc_cls == ConformerCTC:
             self.feat_num = ctc_args['nlayers'] + 2 + 1
         # elif ctc_cls == ConformerCTCNoPool:
@@ -180,7 +183,7 @@ class ECAPA_TDNN(nn.Module):
         feat_dim = ctc_args['d_hid']
 
         self.emb_dim = emb_dim
-        
+
         self.feature_weight = nn.Parameter(torch.zeros(self.feat_num))
         self.instance_norm = nn.InstanceNorm1d(feat_dim)
 
@@ -208,19 +211,19 @@ class ECAPA_TDNN(nn.Module):
         self.ctc_no_grad = ctc_no_grad
         print('ctc_no_grad: ', self.ctc_no_grad)
 
-    def forward(self, latent, input_lengths,  return_asr=False):
+    def forward(self, latent, input_lengths, return_asr=False):
         if self.ctc_no_grad:
             with torch.no_grad():
                 asr, h = self.ctc_model(latent, input_lengths)
         else:
             asr, h = self.ctc_model(latent, input_lengths)
-        
+
         x = torch.stack(h, dim=0)
         norm_weights = F.softmax(self.feature_weight, dim=-1).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
         x = (norm_weights * x).sum(dim=0)
         x = x + 1e-6
         # x = torch.transpose(x, 1, 2) + 1e-6
-            
+
         x = self.instance_norm(x)
         # x = torch.transpose(x, 1, 2)
 
@@ -238,9 +241,10 @@ class ECAPA_TDNN(nn.Module):
             return out, asr
         return out
 
+
 if __name__ == "__main__":
-    from diffspeech.ldm.model import DiT
     from diffspeech.data.collate import get_mask_from_lengths
+    from diffspeech.ldm.model import DiT
     from diffspeech.tools.text.vocab import IPA
 
     bsz = 3

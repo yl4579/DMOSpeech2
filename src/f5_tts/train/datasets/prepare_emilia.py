@@ -7,7 +7,6 @@
 import os
 import sys
 
-
 sys.path.append(os.getcwd())
 
 import json
@@ -19,7 +18,6 @@ from datasets.arrow_writer import ArrowWriter
 from tqdm import tqdm
 
 from f5_tts.model.utils import convert_char_to_pinyin, repetition_found
-
 
 out_zh = {
     "ZH_B00041_S06226",

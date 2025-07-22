@@ -22,7 +22,6 @@ from x_transformers.x_transformers import apply_rotary_pos_emb
 
 from f5_tts.model_new.utils import is_package_available
 
-
 # raw wav to mel spec
 
 
@@ -435,8 +434,8 @@ class Attention(nn.Module):
 # Attention processor
 
 if is_package_available("flash_attn"):
+    from flash_attn import flash_attn_func, flash_attn_varlen_func
     from flash_attn.bert_padding import pad_input, unpad_input
-    from flash_attn import flash_attn_varlen_func, flash_attn_func
 
 
 class AttnProcessor:

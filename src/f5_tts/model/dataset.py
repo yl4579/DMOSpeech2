@@ -1,6 +1,6 @@
-import re
 import json
 import random
+import re
 from importlib.resources import files
 
 import torch
@@ -14,8 +14,6 @@ from tqdm import tqdm
 
 from f5_tts.model.modules import MelSpec
 from f5_tts.model.utils import default
-
-
 
 
 def get_speaker_id(path):

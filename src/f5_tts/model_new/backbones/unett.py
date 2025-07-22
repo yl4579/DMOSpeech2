@@ -17,17 +17,11 @@ from torch import nn
 from x_transformers import RMSNorm
 from x_transformers.x_transformers import RotaryEmbedding
 
-from f5_tts.model_new.modules import (
-    Attention,
-    AttnProcessor,
-    ConvNeXtV2Block,
-    ConvPositionEmbedding,
-    FeedForward,
-    TimestepEmbedding,
-    get_pos_embed_indices,
-    precompute_freqs_cis,
-)
-
+from f5_tts.model_new.modules import (Attention, AttnProcessor,
+                                      ConvNeXtV2Block, ConvPositionEmbedding,
+                                      FeedForward, TimestepEmbedding,
+                                      get_pos_embed_indices,
+                                      precompute_freqs_cis)
 
 # Text embedding
 
